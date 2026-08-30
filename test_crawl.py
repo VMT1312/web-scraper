@@ -5,6 +5,7 @@ from crawl import (
     get_first_paragraph_from_html,
     get_urls_from_html,
     get_images_from_html,
+    extract_page_data,
 )
 
 
@@ -175,6 +176,68 @@ class TestCrawl(unittest.TestCase):
 """
         actual = get_images_from_html(input_body, input_url)
         expected = ["https://crawler-test.com/logo.png"]
+        self.assertEqual(actual, expected)
+
+    def test_extract_page_data_basic(self):
+        input_url = "https://crawler-test.com"
+        input_body = """<html><body>
+            <h1>Test Title</h1>
+            <p>This is the first paragraph.</p>
+            <a href="/link1">Link 1</a>
+            <img src="/image1.jpg" alt="Image 1">
+        </body></html>"""
+        actual = extract_page_data(input_body, input_url)
+        expected = {
+            "url": "https://crawler-test.com",
+            "heading": "Test Title",
+            "first_paragraph": "This is the first paragraph.",
+            "outgoing_links": ["https://crawler-test.com/link1"],
+            "image_urls": ["https://crawler-test.com/image1.jpg"],
+        }
+        self.assertEqual(actual, expected)
+
+    def test_extract_page_data_absolute_paths_only(self):
+        input_url = "https://crawler-test.com"
+        input_body = """<html><body>
+            <h1>Absolute Page</h1>
+            <p>All URLs are fully-qualified.</p>
+            <a href="https://crawler-test.com/about">About</a>
+            <img src="https://crawler-test.com/logo.png" alt="Logo">
+        </body></html>"""
+        actual = extract_page_data(input_body, input_url)
+        expected = {
+            "url": "https://crawler-test.com",
+            "heading": "Absolute Page",
+            "first_paragraph": "All URLs are fully-qualified.",
+            "outgoing_links": ["https://crawler-test.com/about"],
+            "image_urls": ["https://crawler-test.com/logo.png"],
+        }
+        self.assertEqual(actual, expected)
+
+    def test_extract_page_data_mixed_absolute_and_relative_paths(self):
+        input_url = "https://crawler-test.com"
+        input_body = """<html><body>
+            <h1>Mixed Paths</h1>
+            <p>Relative and absolute links should both resolve.</p>
+            <a href="/docs">Docs</a>
+            <a href="https://crawler-test.com/contact">Contact</a>
+            <img src="/images/banner.jpg" alt="Banner">
+            <img src="https://crawler-test.com/assets/logo.png" alt="Logo">
+        </body></html>"""
+        actual = extract_page_data(input_body, input_url)
+        expected = {
+            "url": "https://crawler-test.com",
+            "heading": "Mixed Paths",
+            "first_paragraph": "Relative and absolute links should both resolve.",
+            "outgoing_links": [
+                "https://crawler-test.com/docs",
+                "https://crawler-test.com/contact",
+            ],
+            "image_urls": [
+                "https://crawler-test.com/images/banner.jpg",
+                "https://crawler-test.com/assets/logo.png",
+            ],
+        }
         self.assertEqual(actual, expected)
 
 

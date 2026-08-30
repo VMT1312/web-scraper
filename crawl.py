@@ -1,5 +1,14 @@
 from urllib.parse import urlsplit, urljoin
 from bs4 import BeautifulSoup, Tag
+from typing import TypedDict
+
+
+class PageData(TypedDict):
+    url: str
+    heading: str
+    first_paragraph: str
+    outgoing_links: list[str]
+    image_urls: list[str]
 
 
 def normalize_url(url: str) -> str:
@@ -28,7 +37,7 @@ def get_first_paragraph_from_html(html: str) -> str:
     return first_p.get_text(strip=True) if isinstance(first_p, Tag) else ""
 
 
-def get_urls_from_html(html, base_url: str) -> list[str]:
+def get_urls_from_html(html: str, base_url: str) -> list[str]:
     urls = []
 
     soup = BeautifulSoup(html, "html.parser")
@@ -43,7 +52,7 @@ def get_urls_from_html(html, base_url: str) -> list[str]:
     return urls
 
 
-def get_images_from_html(html, base_url: str) -> list[str]:
+def get_images_from_html(html: str, base_url: str) -> list[str]:
     urls = []
 
     soup = BeautifulSoup(html, "html.parser")
@@ -56,3 +65,13 @@ def get_images_from_html(html, base_url: str) -> list[str]:
             urls.append(urljoin(base_url, path))
 
     return urls
+
+
+def extract_page_data(html: str, page_url: str) -> PageData:
+    return {
+        "url": page_url,
+        "heading": get_heading_from_html(html),
+        "first_paragraph": get_first_paragraph_from_html(html),
+        "outgoing_links": get_urls_from_html(html, page_url),
+        "image_urls": get_images_from_html(html, page_url),
+    }
