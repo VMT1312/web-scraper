@@ -78,9 +78,7 @@ def extract_page_data(html: str, page_url: str) -> PageData:
     }
 
 
-def get_html(
-    url: str = "https://learnwebscraping.dev/practice/ecommerce/",
-) -> bytes | str:
+def get_html(url: str) -> bytes | str:
     res = requests.get(
         url,
         headers={
@@ -93,3 +91,30 @@ def get_html(
     if "text/html" not in content_type:
         raise Exception(f"got non-HTML response: {content_type}")
     return res.content
+
+
+def crawl_page(
+    base_url: str,
+    current_url: str | None = None,
+    page_data: dict[str, PageData] | None = None,
+):
+    if current_url is None:
+        current_url = base_url
+    if not current_url.startswith(base_url):
+        return
+
+    if page_data is None:
+        page_data = {}
+
+    normal_url = normalize_url(current_url)
+    if normal_url in page_data:
+        return
+
+    print(f"crawling at: {normal_url}")
+    html = get_html(current_url)
+
+    print(f"extracting page data at: {normal_url}")
+    page_data[normal_url] = extract_page_data(html, base_url)
+
+    for url in page_data[normal_url]["outgoing_links"]:
+        crawl_page(base_url, url, page_data)
