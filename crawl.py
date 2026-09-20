@@ -1,7 +1,6 @@
 from urllib.parse import urlsplit, urljoin
 from bs4 import BeautifulSoup, Tag
 from typing import TypedDict
-import requests
 import asyncio
 import aiohttp
 from urllib.parse import urlsplit

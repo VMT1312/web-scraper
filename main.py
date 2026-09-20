@@ -1,6 +1,7 @@
 import sys
-from crawl import crawl_site_async
 import asyncio
+from crawl import crawl_site_async
+from json_report import write_json_report
 
 
 async def main():
@@ -12,8 +13,7 @@ async def main():
         sys.exit(1)
     print(f"starting crawl of: {sys.argv[1]}")
     page_data = await crawl_site_async(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
-    for v in page_data.values():
-        print(v)
+    write_json_report(page_data)
 
 
 if __name__ == "__main__":
