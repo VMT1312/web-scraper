@@ -7,11 +7,11 @@ async def main():
     if len(sys.argv) < 2:
         print("no website provided")
         sys.exit(1)
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 4:
         print("too many arguments provided")
         sys.exit(1)
     print(f"starting crawl of: {sys.argv[1]}")
-    page_data = await crawl_site_async(sys.argv[1], 10)
+    page_data = await crawl_site_async(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
     for v in page_data.values():
         print(v)
 
